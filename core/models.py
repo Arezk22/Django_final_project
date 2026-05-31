@@ -82,6 +82,7 @@ class CourseDocument(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='documents') 
     title = models.CharField(max_length=200) 
     file = models.FileField(upload_to='course_docs/') 
+   
     uploaded_at = models.DateTimeField(auto_now_add=True) 
 
     def __str__(self):
