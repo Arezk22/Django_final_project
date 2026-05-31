@@ -1,0 +1,131 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Log In - Eduplatform{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5 bg-light-subtle">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-sm-5">
+                    
+                    <div class="text-center mb-5">
+                        <h3 class="fw-bold text-dark tracking-tight mb-2" style="font-weight: 700;">Welcome Back</h3>
+                        <p class="text-muted small">Login to continue managing your courses</p>
+                    </div>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-medium mb-1.5">
+                                Username
+                            </label>
+                            <div class="form-field-container">
+                                {{ form.username }}
+                            </div>
+                            {% for error in form.username.errors %}
+                                <div class="text-danger extra-small mt-1 fw-medium px-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i> {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-medium mb-1.5">
+                                Password
+                            </label>
+                            <div class="form-field-container">
+                                {{ form.password }}
+                            </div>
+                            {% for error in form.password.errors %}
+                                <div class="text-danger extra-small mt-1 fw-medium px-1">
+                                    <i class="bi bi-exclamation-circle me-1"></i> {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger p-2.5 rounded-3 extra-small fw-medium mb-4" role="alert">
+                                {% for error in form.non_field_errors %}
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-dark btn-lg fs-6 fw-semibold py-2.5 rounded-3 shadow-none hover-dark-btn">
+                                Log In
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4 pt-3 border-top border-light-subtle">
+                            <span class="text-muted small">Don’t have an account?</span>
+                            <a href="{% url 'register' %}" class="text-decoration-none small ms-1 fw-semibold text-dark hover-underline">Register</a>
+                        </div>
+                    </form>
+                    
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-light-subtle {
+        background-color: #f8fafc !important; /* نفس الخلفية الهادئة والمريحة المعتمدة لصفحة التسجيل */
+    }
+    .tracking-tight { 
+        letter-spacing: -0.02em; 
+    }
+    .mb-1\.5 { 
+        margin-bottom: 0.4rem; 
+    }
+    .extra-small { 
+        font-size: 11px; 
+        opacity: 0.8;
+    }
+
+    /* تنظيف وتنسيق حقول الإدخال لتطابق صفحة الـ Register */
+    form input[type="text"], 
+    form input[type="password"] {
+        display: block;
+        width: 100%;
+        font-family: inherit;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #1e293b;
+        background-color: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 0.65rem 1rem;
+        font-size: 0.92rem;
+        outline: none;
+        box-shadow: none;
+        transition: all 0.2s ease;
+    }
+
+    /* تأثير الـ Focus النظيف عند الكتابة */
+    form input:focus {
+        border-color: #0f172a;
+        background-color: #ffffff;
+    }
+
+    /* الزر الأسود العصري المتناسق */
+    .hover-dark-btn {
+        background-color: #0f172a !important;
+        border: none !important;
+        transition: background-color 0.2s ease;
+    }
+    .hover-dark-btn:hover {
+        background-color: #1e293b !important;
+    }
+
+    .hover-underline:hover {
+        text-decoration: underline !important;
+        color: #000000 !important;
+    }
+</style>
+{% endblock %}
