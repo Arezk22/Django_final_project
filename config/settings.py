@@ -125,7 +125,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-LOGIN_URL = 'core:course_list'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'core:course_list'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
