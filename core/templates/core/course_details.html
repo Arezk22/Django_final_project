@@ -1,158 +1,259 @@
 {% extends 'core/base.html' %}
-
-{% block title %}Course Details - {{ course.title }}{% endblock %}
-
+<!-- prettier-ignore -->
+{% block title %}Course Details - {{ course.title}}{% endblock %}
+<!-- prettier-ignore -->
 {% block content %}
 <div class="container my-4">
-    <div class="mb-4">
-        <a href="{% url 'core:course_list' %}" class="text-decoration-none text-secondary small fw-semibold d-inline-flex align-items-center gap-1 hover-black">
-            <i class="bi bi-arrow-left"></i> Back to Courses
-        </a>
-    </div>
+  <div class="mb-4">
+    <a
+      href="{% url 'core:course_list' %}"
+      class="text-decoration-none text-secondary small fw-semibold d-inline-flex align-items-center gap-1 hover-black"
+    >
+      <i class="bi bi-arrow-left"></i> Back to Courses
+    </a>
+  </div>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
-                <div class="p-4 pt-5 text-white position-relative" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); min-height: 200px;">
-                    <div class="mb-3">
-                        <span class="badge bg-white text-dark px-3 py-2 rounded-pill small fw-bold shadow-sm">
-                            <i class="bi bi-folder2-open me-1 text-primary"></i> {{ course.category.name }}
-                        </span>
-                    </div>
-                    <h1 class="fw-extrabold tracking-tight display-6 mb-3 text-white"> {{ course.title }}</h1>
-                    
-                    <div class="d-flex align-items-center gap-3 text-white-50 small mt-2">
-                        <span><i class="bi bi-person-fill me-1"></i> By {{ course.teacher }}</span>
-                        <span>•</span>
-                        <span class="badge {% if course.is_published %}bg-success text-white{% else %}bg-warning text-dark{% endif %} rounded-pill px-2.5 py-1 fw-bold border-0">
-                            {{ course.is_published|yesno:"Published,Draft" }}
-                        </span>
-                    </div>
-                </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div
+        class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4"
+      >
+        <div
+          class="p-4 pt-5 text-white position-relative"
+          style="
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            min-height: 200px;
+          "
+        >
+          <div class="mb-3">
+            <span
+              class="badge bg-white text-dark px-3 py-2 rounded-pill small fw-bold shadow-sm"
+            >
+              <!-- prettier-ignore -->
+              <i class="bi bi-folder2-open me-1 text-primary"></i>
+              {{course.category.name }}
+            </span>
+          </div>
+          <h1 class="fw-extrabold tracking-tight display-6 mb-3 text-white">
+            {{ course.title }}
+          </h1>
 
-                <div class="card-body p-4 p-md-5">
-                    <div class="mb-5">
-                        <h4 class="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
-                            <i class="bi bi-text-left text-primary fs-4"></i> About This Course
-                        </h4>
-                        <p class="card-text fs-6 text-secondary lh-lg opacity-90 pr-md-4" style="text-align: justify;">
-                            {{ course.description }}
-                        </p>
-                    </div>
-
-                    {% if request.user.is_authenticated and request.user.profile.role == 'teacher' and course.teacher == request.user %}
-                    <div class="p-4 bg-light rounded-4 border border-light-subtle d-flex flex-wrap gap-2 align-items-center mt-5">
-                        <div class="me-auto">
-                            <h6 class="text-dark fw-bold m-0"><i class="bi bi-sliders me-1 text-primary"></i> Instructor Dashboard</h6>
-                            <small class="text-muted">Manage your students' learning assets and course privacy</small>
-                        </div>
-                        <div class="d-flex gap-2 w-100 w-sm-auto mt-3 mt-sm-0">
-                            <a href="{% url 'core:update_course' course.pk %}" class="btn btn-outline-dark btn-sm fw-semibold px-3 rounded-3 flex-fill">
-                                <i class="bi bi-pencil me-1"></i> Edit
-                            </a>
-                            <a href="{% url 'core:delete_course' course.pk %}" class="btn btn-outline-danger btn-sm fw-semibold px-3 rounded-3 flex-fill">
-                                <i class="bi bi-trash3 me-1"></i> Delete
-                            </a>
-                            <a href="{% url 'core:document_upload' course.pk %}" class="btn btn-emerald btn-sm fw-semibold px-3 rounded-3 text-white flex-fill">
-                                <i class="bi bi-cloud-upload me-1"></i> Assets
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+          <div class="d-flex align-items-center gap-3 text-white-50 small mt-2">
+            <!-- prettier-ignore -->
+            <span
+              ><i class="bi bi-person-fill me-1"></i> By {{ course.teacher}}</span
+            >
+            <span>•</span>
+            <span
+              class="badge {% if course.is_published %}bg-success text-white{% else %}bg-warning text-dark{% endif %} rounded-pill px-2.5 py-1 fw-bold border-0"
+            >
+              {{ course.is_published|yesno:"Published,Draft" }}
+            </span>
+          </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 rounded-4 bg-white p-4 sticky-top" style="top: 24px; z-index: 10;">
-                <div class="card-body p-0">
-                    <h5 class="fw-extrabold text-dark mb-4 tracking-tight">Course Specifications</h5>
-                    
-                    <div class="d-flex flex-column gap-3 mb-4">
-                        <div class="d-flex align-items-center p-3 bg-light rounded-4 border border-light-subtle">
-                            <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width:42px; height:42px;">
-                                <i class="bi bi-person-video3 fs-5"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block small-label">Instructor</small>
-                                <span class="fw-bold text-dark">{{ course.teacher }}</span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex align-items-center p-3 bg-light rounded-4 border border-light-subtle">
-                            <div class="bg-warning bg-opacity-10 text-warning p-2.5 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width:42px; height:42px;">
-                                <i class="bi bi-bar-chart-steps fs-5"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block small-label">Skill Level</small>
-                                <span class="fw-bold text-dark text-capitalize">{{ course.level }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr class="my-4 opacity-50">
-
-                    {% if request.user.is_authenticated %}
-                        
-                        {% if request.user.profile.role == 'student' %}
-                            <div class="d-flex flex-column gap-2">
-                                {% if course.id in enrolled_ids %}
-                                    <button class="btn btn-secondary btn-lg fs-6 fw-semibold py-3 rounded-3 border-0 opacity-75 shadow-none w-100" disabled>
-                                        <i class="bi bi-check-all me-2 fs-5"></i> You Are Active In This Course
-                                    </button>
-                                {% else %}
-                                    <form action="{% url 'core:enroll_course' course.id %}" method="post" class="m-0 w-100">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-success btn-lg fs-6 fw-bold py-3 rounded-3 shadow-sm hover-grow w-100">
-                                            <i class="bi bi-lightning-charge-fill me-2"></i> Enroll in Course
-                                        </button>
-                                    </form>
-                                {% endif %}
-
-                                {% if is_enrolled %}
-                                    <a href="{% url 'core:course_assistant' course.pk %}" class="btn btn-primary-gradient btn-lg fs-6 fw-bold py-3 rounded-3 text-white shadow-sm mt-2 hover-grow text-center">
-                                        <i class="bi bi-robot me-2 fs-5"></i> Chat with AI Co-Pilot
-                                    </a>
-                                {% endif %}
-                            </div>
-                        {% endif %}
-
-                    {% else %}
-                        <div class="d-grid">
-                            <a href="{% url 'login' %}" class="btn btn-primary btn-lg fs-6 fw-bold py-3 rounded-3 shadow-sm">
-                                <i class="bi bi-box-arrow-in-right me-2"></i> Login to Take This Course
-                            </a>
-                        </div>
-                    {% endif %}
-
-                </div>
+        <div class="card-body p-4 p-md-5">
+          <div class="mb-5">
+            <h4 class="text-dark fw-bold mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-text-left text-primary fs-4"></i> About This
+              Course
+            </h4>
+            <p
+              class="card-text fs-6 text-secondary lh-lg opacity-90 pr-md-4"
+              style="text-align: justify"
+            >
+              {{ course.description }}
+            </p>
+          </div>
+          <!-- prettier-ignore -->
+          {% if request.user.is_authenticated and request.user.profile.role == 'teacher' and course.teacher == request.user %}
+          <div
+            class="p-4 bg-light rounded-4 border border-light-subtle d-flex flex-wrap gap-2 align-items-center mt-5"
+          >
+            <div class="me-auto">
+              <h6 class="text-dark fw-bold m-0">
+                <i class="bi bi-sliders me-1 text-primary"></i> Instructor
+                Dashboard
+              </h6>
+              <small class="text-muted"
+                >Manage your students' learning assets and course privacy</small
+              >
             </div>
+            <div class="d-flex gap-2 w-100 w-sm-auto mt-3 mt-sm-0">
+              <a
+                href="{% url 'core:update_course' course.pk %}"
+                class="btn btn-outline-dark btn-sm fw-semibold px-3 rounded-3 flex-fill"
+              >
+                <i class="bi bi-pencil me-1"></i> Edit
+              </a>
+              <a
+                href="{% url 'core:delete_course' course.pk %}"
+                class="btn btn-outline-danger btn-sm fw-semibold px-3 rounded-3 flex-fill"
+              >
+                <i class="bi bi-trash3 me-1"></i> Delete
+              </a>
+              <a
+                href="{% url 'core:document_upload' course.pk %}"
+                class="btn btn-emerald btn-sm fw-semibold px-3 rounded-3 text-white flex-fill"
+              >
+                <i class="bi bi-cloud-upload me-1"></i> Assets
+              </a>
+            </div>
+          </div>
+          {% endif %}
         </div>
+      </div>
     </div>
+
+    <div class="col-lg-4">
+      <div
+        class="card shadow-sm border-0 rounded-4 bg-white p-4 sticky-top"
+        style="top: 24px; z-index: 10"
+      >
+        <div class="card-body p-0">
+          <h5 class="fw-extrabold text-dark mb-4 tracking-tight">
+            Course Specifications
+          </h5>
+
+          <div class="d-flex flex-column gap-3 mb-4">
+            <div
+              class="d-flex align-items-center p-3 bg-light rounded-4 border border-light-subtle"
+            >
+              <div
+                class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-3 me-3 d-flex align-items-center justify-content-center"
+                style="width: 42px; height: 42px"
+              >
+                <i class="bi bi-person-video3 fs-5"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block small-label">Instructor</small>
+                <span class="fw-bold text-dark">{{ course.teacher }}</span>
+              </div>
+            </div>
+
+            <div
+              class="d-flex align-items-center p-3 bg-light rounded-4 border border-light-subtle"
+            >
+              <div
+                class="bg-warning bg-opacity-10 text-warning p-2.5 rounded-3 me-3 d-flex align-items-center justify-content-center"
+                style="width: 42px; height: 42px"
+              >
+                <i class="bi bi-bar-chart-steps fs-5"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block small-label"
+                  >Skill Level</small
+                >
+                <span class="fw-bold text-dark text-capitalize"
+                  >{{ course.level }}</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4 opacity-50" />
+
+          {% if request.user.is_authenticated %}
+          <!-- prettier-ignore -->
+          {% if request.user.profile.role == 'student' %}
+          <div class="d-flex flex-column gap-2">
+            {% if is_enrolled %}
+            <button
+              class="btn btn-secondary btn-lg fs-6 fw-semibold py-3 rounded-3 border-0 opacity-75 shadow-none w-100"
+              disabled
+            >
+              <i class="bi bi-check-all me-2 fs-5"></i> You Are Active In This
+              Course
+            </button>
+            {% else %}
+            <form
+              action="{% url 'core:enroll_course' course.id %}"
+              method="post"
+              class="m-0 w-100"
+            >
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="btn btn-success btn-lg fs-6 fw-bold py-3 rounded-3 shadow-sm hover-grow w-100"
+              >
+                <i class="bi bi-lightning-charge-fill me-2"></i> Enroll in
+                Course
+              </button>
+            </form>
+            {% endif %}
+            <!-- prettier-ignore -->
+            {% if is_enrolled %}
+            <a
+              href="{% url 'core:course_assistant' course.pk %}"
+              class="btn btn-primary-gradient btn-lg fs-6 fw-bold py-3 rounded-3 text-white shadow-sm mt-2 hover-grow text-center"
+            >
+              <i class="bi bi-robot me-2 fs-5"></i> Chat with AI Co-Pilot
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
+          <!-- prettier-ignore -->
+          {% else %}
+          <div class="d-grid">
+            <a
+              href="{% url 'login' %}"
+              class="btn btn-primary btn-lg fs-6 fw-bold py-3 rounded-3 shadow-sm"
+            >
+              <i class="bi bi-box-arrow-in-right me-2"></i> Login to Take This
+              Course
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-    .fw-extrabold { font-weight: 800; }
-    .tracking-tight { letter-spacing: -0.025em; }
-    .opacity-90 { opacity: 0.90; }
-    .small-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #64748b !important; }
-    
-    .hover-black:hover { color: #000 !important; }
-    
-    .btn-emerald { background-color: #059669; border-color: #059669; }
-    .btn-emerald:hover { background-color: #047857; border-color: #047857; }
-    
-    .btn-primary-gradient {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        border: none !important;
-    }
-    
-    .hover-grow {
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
-    }
-    .hover-grow:hover {
-        transform: scale(1.02);
-        opacity: 0.95;
-    }
+  .fw-extrabold {
+    font-weight: 800;
+  }
+  .tracking-tight {
+    letter-spacing: -0.025em;
+  }
+  .opacity-90 {
+    opacity: 0.9;
+  }
+  .small-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: #64748b !important;
+  }
+
+  .hover-black:hover {
+    color: #000 !important;
+  }
+
+  .btn-emerald {
+    background-color: #059669;
+    border-color: #059669;
+  }
+  .btn-emerald:hover {
+    background-color: #047857;
+    border-color: #047857;
+  }
+
+  .btn-primary-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+    border: none !important;
+  }
+
+  .hover-grow {
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.2s;
+  }
+  .hover-grow:hover {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
 </style>
 {% endblock %}
