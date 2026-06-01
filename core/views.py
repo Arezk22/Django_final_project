@@ -18,7 +18,7 @@ def Register(request):
         user = form.save()
         print(user)
         login(request, user)
-        return redirect('core:home')
+        return redirect('core:course_list')
     return render(request, 'core/register.html', {'form': form})
 
 
@@ -56,6 +56,12 @@ def course_list(request):
                 'total': Course.objects.filter(is_published=True).count(),
                 'published': Course.objects.filter(is_published=True).count(),      
                 'enrolled': len(enrolled_ids),                                    
+            }
+        elif role == 'admin':
+            stats = {
+                'total': Course.objects.count(),
+                'published': Course.objects.filter(is_published=True).count(),      
+                'unpublished': Course.objects.filter(is_published=False).count(),  
             }
     else:
         stats = {
