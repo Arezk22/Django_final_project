@@ -87,3 +87,28 @@ class CourseDocument(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.course.title})"
+
+
+# ==========================================
+# 6. ChatMessage Model
+# ==========================================
+class ChatMessage(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'user'),
+        ('assistant', 'assistant'),
+    ]
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content = models.TextField()
+    # "rag_document" | "general_knowledge" | "" for user messages
+    source = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='chat_messages')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_messages')
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"[{self.role}] {self.student.username} @ {self.course.title}"

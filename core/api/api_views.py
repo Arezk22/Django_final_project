@@ -6,8 +6,9 @@ from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 
-from .serializers import CourseSerializer, CategorySerializer, EnrollmentSerializer
-from ..models import Course, Category, User, Enrollment
+from .serializers import CourseSerializer, CategorySerializer, EnrollmentSerializer, ChatMessageSerializer
+from ..models import Course, Category, User, Enrollment, ChatMessage
+from ..services.assistant import run_assistant
 
 from .permissions import IsTeacher, IsStudent
 
@@ -82,6 +83,96 @@ class MyCoursesView(APIView):
         serializer = CourseSerializer(courses, many=True)
 
         return Response(serializer.data)
+
+
+class CourseChatView(APIView):
+    """
+    GET  /api/v1/courses/{id}/chat/  — fetch last 20 messages for this student/course
+    POST /api/v1/courses/{id}/chat/  — send a message, receive AI response
+
+    Only enrolled students may access this endpoint.
+    The multi-agent pipeline (Orchestrator → RAG or General agent) runs on POST.
+    """
+
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def _get_enrolled_course(self, request, pk):
+        """Returns (course, None) or (None, error_response)."""
+        try:
+            course = Course.objects.select_related("category").get(pk=pk)
+        except Course.DoesNotExist:
+            return None, Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not Enrollment.objects.filter(student=request.user, course=course).exists():
+            return None, Response(
+                {"error": "You are not enrolled in this course."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return course, None
+
+    def get(self, request, pk):
+        course, err = self._get_enrolled_course(request, pk)
+        if err:
+            return err
+
+        messages = ChatMessage.objects.filter(
+            student=request.user, course=course
+        )  # already ordered by created_at via Meta
+        serializer = ChatMessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, pk):
+        course, err = self._get_enrolled_course(request, pk)
+        if err:
+            return err
+
+        question = request.data.get("message", "").strip()
+        if not question:
+            return Response({"error": "message field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Persist the student's message first
+        ChatMessage.objects.create(
+            student=request.user,
+            course=course,
+            role="user",
+            content=question,
+            source="",
+        )
+
+        # Last 10 messages (5 turns) in chronological order for context
+        recent = list(
+            ChatMessage.objects.filter(student=request.user, course=course)
+            .order_by("-created_at")[:10]
+        )[::-1] # reverse to messages order to keep chronological order
+
+
+        # Run the multi-agent pipeline
+        try:
+            result = run_assistant(question=question, course=course, recent_messages=recent)
+        except Exception as exc:
+            return Response(
+                {"error": f"Assistant unavailable: {str(exc)}"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        # Persist the assistant's response
+        ChatMessage.objects.create(
+            student=request.user,
+            course=course,
+            role="assistant",
+            content=result["content"],
+            source=result["source"],
+        )
+
+        return Response(
+            {
+                "role": "assistant",
+                "content": result["content"],
+                "source": result["source"],
+                "references": result.get("references", []),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class RegisterApiView(APIView):
