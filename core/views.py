@@ -2,11 +2,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+
+from core.services.recommendation_service import get_recommendations
 from .forms import ExtendedRegistrationForm, CourseForm, CourseDocumentForm,UserUpdateForm,ProfileUpdateForm
 from .models import Course, Enrollment, Profile, CourseDocument,Category
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-
+from django.shortcuts import render
+from .models import Category
+from core.services.recommendation_service import get_recommendations
 
 # def home(request):
 #     return HttpResponse('hello')
@@ -282,3 +286,49 @@ def profile_view(request):
         'p_form': p_form
     }
     return render(request, 'core/profile.html', context)
+
+
+######################
+# RECOMMENDATION VIEW 
+#####################
+
+
+@login_required 
+def recommend(request):
+    recommendations = []
+
+    query = ""
+    category = ""
+    level = ""
+
+    if request.method == "POST":
+        query = request.POST.get("query", "").strip()
+        category = request.POST.get("category", "").strip()
+        level = request.POST.get("level", "").strip()
+
+        parts = [query]
+
+        if category:
+            parts.append(f"category {category}")
+
+        if level:
+            parts.append(f"level {level}")
+
+        search_query = " ".join(parts)
+
+        recommendations = get_recommendations(
+            request.user,
+            search_query
+        )
+
+    return render(
+        request,
+        "courses/recommend.html",
+        {
+            "recommendations": recommendations,
+            "categories": Category.objects.all(),
+            "query": query,
+            "category": category,
+            "level": level,
+        }
+    )
