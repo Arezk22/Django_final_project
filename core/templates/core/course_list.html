@@ -80,45 +80,73 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="p-3 bg-light rounded-4 mb-5 border">
-        <form method="get" class="row g-3 align-items-center">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search small"></i></span>
-                    <input
-                        type="text"
-                        name="search"
-                        class="form-control border-start-0 ps-0 form-control-lg fs-6"
-                        placeholder="What do you want to learn today?..."
-                        value="{{ request.GET.search }}"
-                    />
-                </div>
+    <!-- Filter Bar -->
+<div class="p-3 bg-light rounded-4 mb-5 border">
+    <form method="post" class="row g-3 align-items-center">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search small"></i>
+                </span>
+
+                <input
+                    type="text"
+                    name="query"
+                    class="form-control border-start-0 ps-0 form-control-lg fs-6"
+                    placeholder="What do you want to learn today?..."
+                    value="{{ query|default:'' }}"
+                />
             </div>
-            <div class="col-md-2">
-                <select name="category" class="form-select form-select-lg fs-6">
-                    <option value="">All Categories</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
-                            {{ cat.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <select name="level" class="form-select form-select-lg fs-6">
-                    <option value="">All Levels</option>
-                    <option value="beginner" {% if request.GET.level == 'beginner' %}selected{% endif %}>Beginner</option>
-                    <option value="intermediate" {% if request.GET.level == 'intermediate' %}selected{% endif %}>Intermediate</option>
-                    <option value="advanced" {% if request.GET.level == 'advanced' %}selected{% endif %}>Advanced</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-dark btn-lg w-100 fs-6 fw-semibold shadow-sm hover-dark">
-                    Filter Results
-                </button>
-            </div>
-        </form>
-    </div>
+        </div>
+
+        <div class="col-md-2">
+            <select name="category" class="form-select form-select-lg fs-6">
+                <option value="">All Categories</option>
+
+                {% for cat in categories %}
+                    <option
+                        value="{{ cat.slug }}"
+                        {% if category == cat.slug %}selected{% endif %}
+                    >
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="level" class="form-select form-select-lg fs-6">
+                <option value="">All Levels</option>
+
+                <option value="beginner"
+                    {% if level == 'beginner' %}selected{% endif %}>
+                    Beginner
+                </option>
+
+                <option value="intermediate"
+                    {% if level == 'intermediate' %}selected{% endif %}>
+                    Intermediate
+                </option>
+
+                <option value="advanced"
+                    {% if level == 'advanced' %}selected{% endif %}>
+                    Advanced
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button
+                type="submit"
+                class="btn btn-dark btn-lg w-100 fs-6 fw-semibold shadow-sm hover-dark"
+            >
+                Get Recommendations
+            </button>
+        </div>
+    </form>
+</div>
 
     <!-- Courses Grid -->
     <div class="row g-4">
