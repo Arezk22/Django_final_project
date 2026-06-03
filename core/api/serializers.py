@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Course, Category, Enrollment
+from ..models import Course, Category, Enrollment, ChatMessage
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -21,3 +21,10 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = "__all__"
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ("id", "role", "content", "source", "created_at")
+        read_only_fields = fields

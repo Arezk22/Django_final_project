@@ -6,8 +6,9 @@ from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 
-from .serializers import CourseSerializer, CategorySerializer, EnrollmentSerializer
-from ..models import Course, Category, User, Enrollment
+from .serializers import CourseSerializer, CategorySerializer, EnrollmentSerializer, ChatMessageSerializer
+from ..models import Course, Category, User, Enrollment, ChatMessage
+from ..services.assistant import run_assistant
 
 from .permissions import IsTeacher, IsStudent
 

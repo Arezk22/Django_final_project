@@ -252,9 +252,31 @@ def course_assistant(request, pk):
         message = request.POST.get('message', '').strip()
         if message:
             history = request.session.get(session_key, [])
+
+            # Pass the last 10 session messages as context (before the current question)
+            recent = [
+                SimpleNamespace(role=m['role'], content=m['content'])
+                for m in history[-10:]
+            ]
+
+            try:
+                from .services.assistant import run_assistant
+                course_with_category = Course.objects.select_related('category').get(pk=pk)
+                result = run_assistant(
+                    question=message,
+                    course=course_with_category,
+                    recent_messages=recent,
+                )
+                reply = result['content']
+                source = result.get('source', '')
+            except Exception:
+                reply = 'The assistant is temporarily unavailable. Please try again.'
+                source = ''
+
             history.append({'role': 'user', 'content': message})
-            history.append({'role': 'assistant', 'content': '...', 'source': 'rag'})
+            history.append({'role': 'assistant', 'content': reply, 'source': source})
             request.session[session_key] = history
+
         return redirect('core:course_assistant', pk=pk)
 
     chat_history = request.session.get(session_key, [])

@@ -134,3 +134,6 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
+CHROMA_PATH = os.path.join(BASE_DIR, 'chroma_db')
