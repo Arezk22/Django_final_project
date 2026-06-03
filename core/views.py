@@ -18,6 +18,15 @@ from django.shortcuts import render
 from .models import Category
 from core.services.recommendation_service import get_recommendations
 from types import SimpleNamespace
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Course, Category, Enrollment # تأكد من صحة مسارات الاستيراد لديك
+import json
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Course, Category
+
 
 # def home(request):
 #     return HttpResponse('hello')
@@ -33,34 +42,43 @@ def Register(request):
     return render(request, "core/register.html", {"form": form})
 
 
+
 def course_list(request):
+    # 1. تحديد قاعدة البيانات الأساسية للكورسات (تطبق على الكل لغرض الفلترة العامة)
     if request.user.is_authenticated and request.user.profile.role == "teacher":
-        courses = Course.objects.filter(teacher=request.user)
+        # إذا كنت تريد المدرس يرى كورساته فقط حتى عند الفلترة، اتركها كما هي.
+        # ولكن بما أنك طلبت "يطبق على كل الـ courses"، سنعرض كل الكورسات أو المنشورة منها للجميع:
+        courses = Course.objects.all() 
     else:
         courses = Course.objects.filter(is_published=True)
 
-    search = request.GET.get("search")
+    # 2. استقبال بيانات الفلتر من الـ GET (تم تحويل search إلى query لتطابق الـ HTML)
+    query = request.GET.get("query")
     category = request.GET.get("category")
     level = request.GET.get("level")
 
-    if search:
-        courses = courses.filter(title__icontains=search) | courses.filter(
-            description__icontains=search
+    # 3. تطبيق عمليات الفلترة
+    if query:
+        courses = courses.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
         )
     if category:
         courses = courses.filter(category__slug=category)
     if level:
         courses = courses.filter(level=level)
 
+    # 4. حساب المعطيات الأخرى والإحصائيات (Stats)
     enrolled_ids = []
 
     if request.user.is_authenticated:
         role = request.user.profile.role
         if role == "teacher":
+            # الإحصائيات تحسب بناءً على كورسات المدرس نفسه فقط كما كانت في كودك الأصلي
+            teacher_courses = Course.objects.filter(teacher=request.user)
             stats = {
-                "total": courses.count(),
-                "published": courses.filter(is_published=True).count(),
-                "unpublished": courses.filter(is_published=False).count(),
+                "total": teacher_courses.count(),
+                "published": teacher_courses.filter(is_published=True).count(),
+                "unpublished": teacher_courses.filter(is_published=False).count(),
             }
         elif role == "student":
             enrolled_ids = Enrollment.objects.filter(student=request.user).values_list(
@@ -86,12 +104,17 @@ def course_list(request):
 
     filtered_courses_count = courses.count()
 
+    # 5. تمرير القيم إلى الـ Context
     context = {
         "course": courses,
         "filtered_courses_count": filtered_courses_count,
         "categories": Category.objects.all(),
         "enrolled_ids": enrolled_ids,
         "stats": stats,
+        # أضفنا هذه المتغيرات لكي يقرأها الـ Template ويحافظ على الكلمات المختارة داخل حقول الفلتر
+        "query": query,
+        "category": category,
+        "level": level,
     }
     return render(request, "core/course_list.html", context)
 
@@ -345,10 +368,50 @@ def profile_view(request):
 #####################
 
 
+
+# تأكد من استيراد دالة الذكاء الاصطناعي لديك
+# from .utils import get_recommendations 
+
 @login_required
 def recommend(request):
-    recommendations = []
+    # إذا كان الطلب قادم من الـ Chatbot عبر JavaScript (AJAX)
+    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            user_message = data.get("message", "").strip()
+            
+            if not user_message:
+                return JsonResponse({"status": "error", "message": "Empty message"}, status=400)
+            
+            # 1. جلب معلومات كل الكورسات من قاعدة البيانات وتلخيصها للـ AI
+            all_courses = Course.objects.all() # أو filter(is_published=True) حسب رغبتك
+            courses_context = "Available Courses in Database:\n"
+            for c in all_courses:
+                courses_context += f"- Title: {c.title} | Category: {c.category} | Level: {c.level} | Description: {c.description[:150]}...\n"
+            
+            # 2. دمج سياق الكورسات مع سؤال المستخدم لتوجيه الـ AI
+            prompt_for_ai = (
+                f"You are a helpful Career Advisor AI inside an educational platform.\n"
+                f"{courses_context}\n"
+                f"User Question: {user_message}\n"
+                f"Answer the user query accurately based ONLY on the available courses listed above if they are asking about courses. Be concise and friendly."
+            )
+            
+            # 3. إرسال الـ prompt المعدل لدالة الذكاء الاصطناعي (تأكد أن دالتك تقبل نص الـ prompt)
+            ai_response = get_recommendations(request.user, prompt_for_ai)
+            
+            return JsonResponse({
+                "status": "success",
+                "reply": ai_response
+            })
+            
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
+    # -------------------------------------------------------------
+    # الجزء القديم الخاص بصفحة التوصيات العادية (Form Submit)
+    # -------------------------------------------------------------
+    recommendations = []
     query = ""
     category = ""
     level = ""
@@ -359,20 +422,15 @@ def recommend(request):
         level = request.POST.get("level", "").strip()
 
         parts = [query]
-
-        if category:
-            parts.append(f"category {category}")
-
-        if level:
-            parts.append(f"level {level}")
+        if category: parts.append(f"category {category}")
+        if level: parts.append(f"level {level}")
 
         search_query = " ".join(parts)
-
         recommendations = get_recommendations(request.user, search_query)
 
     return render(
         request,
-        "courses/recommend.html",
+        "core/course_list.html",
         {
             "recommendations": recommendations,
             "categories": Category.objects.all(),

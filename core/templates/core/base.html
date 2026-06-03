@@ -196,6 +196,244 @@
       font-size: 14px;
       font-weight: 500;
     }
+
+    /* ==========================================================================
+       START CHATBOT STYLES (تنسيقات زر الشات بوت)
+       ========================================================================== */
+    .chatbot-container {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .chatbot-button {
+      width: 60px;
+      height: 60px;
+      background-color: #8A0F29; /* اللون العنابي الموضح في الصورة */
+      border-radius: 50%;
+      border: none;
+      color: white;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .chatbot-button:hover {
+      transform: scale(1.05);
+      background-color: #700c20;
+    }
+
+    .chatbot-popup {
+      background-color: white;
+      border: 1.5px solid #8A0F29;
+      border-radius: 16px;
+      padding: 14px 18px;
+      width: 380px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+      position: relative;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .chatbot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .chatbot-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2D3748;
+    }
+
+    .chatbot-close-btn {
+      background: none;
+      border: none;
+      color: #718096;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .chatbot-close-btn:hover {
+      color: #2D3748;
+    }
+
+    .chatbot-body {
+      font-size: 13.5px;
+      color: #4A5568;
+      line-height: 1.4;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* النافذة الجانبية للشات */
+.chat-sidebar {
+  position: fixed;
+  bottom: 100px;
+  right: -420px; /* مخفية في البداية خارج الشاشة يميناً */
+  width: 380px;
+  height: 500px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* حركة انزلاق مريحة جداً */
+  z-index: 10000;
+  border: 1px solid #e2e8f0;
+}
+
+/* عندما تصبح النافذة نشطة تظهر بالانزلاق */
+.chat-sidebar.active {
+  right: 25px;
+}
+
+/* رأس النافذة الجانبية */
+.chat-sidebar-header {
+  background: linear-gradient(135deg, #8A0F29 0%, #5F0A1C 100%);
+  padding: 16px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-avatar-status {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
+  background-color: #10b981; /* نقطة خضراء تعني نشط */
+  border: 2px solid #8A0F29;
+  border-radius: 50%;
+}
+
+.chat-sidebar-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.chat-sidebar-close:hover { color: white; }
+
+/* منطقة الرسائل داخل الشات */
+.chat-sidebar-body {
+  flex: 1;
+  padding: 16px;
+  background-color: #f8fafc; /* لون خلفية مريح جداً وهادئ للعين */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* تصميم فقاعات الرسائل */
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.bot-msg { align-self: flex-start; }
+.user-msg { align-self: flex-end; }
+
+.msg-bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.bot-msg .msg-bubble {
+  background-color: #ffffff;
+  color: #334155;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.user-msg .msg-bubble {
+  background-color: #8A0F29;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+.user-msg .msg-time { align-self: flex-end; }
+
+/* منطقة صندوق الإدخال السفلي */
+.chat-sidebar-footer {
+  padding: 12px 16px;
+  background-color: white;
+  border-top: 1px solid #edf2f7;
+}
+
+.chat-sidebar-footer .form-control {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px 0 0 12px;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+}
+
+.btn-send-msg {
+  background-color: #8A0F29;
+  color: white;
+  border: none;
+  border-radius: 0 12px 12px 0;
+  padding: 0 16px;
+}
+.btn-send-msg:hover {
+  background-color: #700c20;
+  color: white;
+}
+
+/* شاشات الموبايل الصغيرة */
+@media (max-width: 480px) {
+  .chat-sidebar {
+    width: calc(100% - 40px);
+    height: 70vh;
+  }
+}
+    /* ==========================================================================
+       END CHATBOT STYLES
+       ========================================================================== */
   </style>
 </head>
 
@@ -323,9 +561,200 @@
 
   </div>
 
+<div class="chatbot-container">
+  
+  <div class="chat-sidebar" id="chatSidebar">
+    <div class="chat-sidebar-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="chat-avatar-status">
+          <i class="bi bi-robot fs-5"></i>
+          <span class="status-dot"></span>
+        </div>
+        <div>
+          <h6 class="m-0 fw-bold text-white fs-6">Career Advisor AI</h6>
+          <small class="text-white-50" style="font-size: 11px;">Always active to help you</small>
+        </div>
+      </div>
+      <button class="chat-sidebar-close" onclick="toggleChatbox()">&times;</button>
+    </div>
+
+    <div class="chat-sidebar-body" id="chatBody">
+      <div class="chat-msg bot-msg">
+        <div class="msg-bubble">
+          Hello! 👋 I am your AI Career Advisor. How can I help you map out your learning or career path today?
+        </div>
+        <small class="msg-time">Just now</small>
+      </div>
+    </div>
+
+    <div class="chat-sidebar-footer">
+      <div class="input-group">
+        <input type="text" id="chatInput" class="form-control shadow-none" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+        <button class="btn btn-send-msg" type="button" onclick="sendMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatbot-popup" id="chatbotPopup">
+    <div class="chatbot-header">
+      <span class="chatbot-title">AI-Powered Career Advisor</span>
+      <button class="chatbot-close-btn" onclick="closeChatbotPopup()">&times;</button>
+    </div>
+    <div class="chatbot-body">
+      Hello! I am your career advisor, happy to assist you, <strong style="cursor:pointer;" onclick="toggleChatbox()">Ask me now!</strong>
+    </div>
+  </div>
+
+  <button class="chatbot-button" id="chatBtn" onclick="toggleChatbox()">
+    <i class="bi bi-robot" id="chatIcon"></i>
+  </button>
+</div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
+
+  <script>
+  // 1. إغلاق الرسالة الترحيبية الصغيرة
+  function closeChatbotPopup() {
+    const popup = document.getElementById('chatbotPopup');
+    if (popup) popup.style.display = 'none';
+  }
+
+  // 2. فتح وإغلاق نافذة الشات الجانبية بسلاسة
+  function toggleChatbox() {
+    const sidebar = document.getElementById('chatSidebar');
+    const icon = document.getElementById('chatIcon');
+    
+    // إخفاء البوب آب الصغير بمجرد فتح الشات الجانبي
+    closeChatbotPopup();
+
+    if (sidebar) {
+      sidebar.classList.toggle('active');
+
+      // تغيير الأيقونة من روبوت إلى (X) عند الفتح والعكس
+      if (icon) {
+        if (sidebar.classList.contains('active')) {
+          icon.className = 'bi bi-x-lg';
+        } else {
+          icon.className = 'bi bi-robot';
+        }
+      }
+    }
+  }
+
+  // 3. إرسال الرسالة الحقيقية والاتصال بـ Django الـ View
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const messageText = input ? input.value.trim() : '';
+    if (messageText === '') return;
+
+    const chatBody = document.getElementById('chatBody');
+    if (!chatBody) return;
+
+    // أ. عرض رسالة المستخدم فوراً في الشات
+    const userMsgHtml = `
+      <div class="chat-msg user-msg">
+        <div class="msg-bubble">${messageText}</div>
+        <small class="msg-time">Just now</small>
+      </div>
+    `;
+    chatBody.insertAdjacentHTML('beforeend', userMsgHtml);
+    input.value = '';
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // ب. عرض مؤشر الانتظار (Thinking...) لحين رد السيرفر
+    const typingIndicatorId = 'typing-' + Date.now();
+    const typingHtml = `
+      <div class="chat-msg bot-msg" id="${typingIndicatorId}">
+        <div class="msg-bubble text-muted">
+          <span class="spinner-grow spinner-grow-sm text-secondary" role="status"></span> Thinking...
+        </div>
+      </div>
+    `;
+    chatBody.insertAdjacentHTML('beforeend', typingHtml);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // ج. إرسال طلب Fetch الحقيقي إلى الـ View
+    // ⚠️ تنبيه: تأكد أن '/core/course_list/' هو نفس الـ URL المكتوب في urls.py لصفحة الـ course_list
+    fetch('/core/course_list.html/', { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ message: messageText })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.json();
+    })
+    .then(data => {
+      // إزالة مؤشر الانتظار
+      const indicator = document.getElementById(typingIndicatorId);
+      if (indicator) indicator.remove();
+
+      if (data.status === 'success') {
+        // عرض رد الـ AI الحقيقي المعتمد على الكورسات
+        const botMsgHtml = `
+          <div class="chat-msg bot-msg">
+            <div class="msg-bubble">${data.reply}</div>
+            <small class="msg-time">Just now</small>
+          </div>
+        `;
+        chatBody.insertAdjacentHTML('beforeend', botMsgHtml);
+      } else {
+        showErrorBubble("Sorry, I couldn't process that. Please try again.");
+      }
+      chatBody.scrollTop = chatBody.scrollHeight;
+    })
+    .catch(error => {
+      const indicator = document.getElementById(typingIndicatorId);
+      if (indicator) indicator.remove();
+      showErrorBubble("Connection error. Please check your server.");
+      console.error('Error:', error);
+    });
+  }
+
+  // 4. عرض فقاعة خطأ حمراء عند فشل الاتصال بالسيرفر
+  function showErrorBubble(text) {
+    const chatBody = document.getElementById('chatBody');
+    if (chatBody) {
+      const errorHtml = `
+        <div class="chat-msg bot-msg">
+          <div class="msg-bubble bg-danger-subtle text-danger">${text}</div>
+        </div>
+      `;
+      chatBody.insertAdjacentHTML('beforeend', errorHtml);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  }
+
+  // 5. جعل زر الـ Enter يقوم بالإرسال بدلاً من الضغط بالماوس فقط
+  function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+      sendMessage();
+    }
+  }
+
+  // 6. دالة مساعدة لجلب الـ CSRF Token من المتصفح لتوثيق أمان الطلب في Django
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
 </body>
 
 </html>

@@ -3,14 +3,17 @@ from core.ai_agents.recommender import search_courses
 from core.ai_agents.explainer import explain_recommendation
 
 
+SIMILARITY_THRESHOLD = 0.35  # Chroma Distance
+
+
 def get_recommendations(user, query, use_ai_explainer=False):
     """
-    Generate course recommendations based on semantic search
-    and exclude already enrolled courses.
+    Generate course recommendations using semantic search.
+    Exclude enrolled courses and weak matches.
     """
 
     # ==========================================
-    # 1. Get enrolled course IDs
+    # 1. Get enrolled courses
     # ==========================================
     enrolled_courses = set(
         Enrollment.objects.filter(student=user)
@@ -18,61 +21,73 @@ def get_recommendations(user, query, use_ai_explainer=False):
     )
 
     # ==========================================
-    # 2. Semantic search (Vector DB)
+    # 2. Semantic Search
+    # search_courses MUST return:
+    # [(document, distance), ...]
     # ==========================================
     results = search_courses(query)
 
-    # ==========================================
-    # 3. Deduplication + Filtering
-    # ==========================================
     unique = {}
 
-    for item in results:
+    # ==========================================
+    # 3. Filter Results
+    # ==========================================
+    for doc, distance in results:
+
         try:
-            metadata = item.metadata or {}
+            # Reject weak matches
+            if distance > SIMILARITY_THRESHOLD:
+                continue
+
+            metadata = doc.metadata or {}
 
             course_id = metadata.get("course_id")
 
-            if course_id is None:
+            if not course_id:
                 continue
 
             course_id = int(course_id)
 
-            # skip already enrolled courses
+            # Skip enrolled
             if course_id in enrolled_courses:
                 continue
 
-            # keep only first occurrence
-            if course_id not in unique:
-                title = metadata.get("title", "")
-                category = metadata.get("category", "")
-                level = metadata.get("level", "")
+            # Deduplicate
+            if course_id in unique:
+                continue
 
-                # optional AI explanation
-                reason = None
-                if use_ai_explainer:
-                    reason = explain_recommendation(query, title)
+            title = metadata.get("title", "")
+            category = metadata.get("category", "")
+            level = metadata.get("level", "")
 
-                unique[course_id] = {
-                    "course_id": course_id,
-                    "title": title,
-                    "category": category,
-                    "level": level,
-                    "reason": reason
-                }
+            reason = None
+
+            if use_ai_explainer:
+                reason = explain_recommendation(query, title)
+
+            unique[course_id] = {
+                "course_id": course_id,
+                "title": title,
+                "category": category,
+                "level": level,
+                "reason": reason,
+                "score": round(distance, 3),
+            }
 
         except Exception as e:
-            print("Recommendation error:", e)
-            continue
+            print("Recommendation Error:", e)
 
     # ==========================================
-    # 4. Final output
+    # 4. No relevant results
     # ==========================================
+    if not unique:
+        return []
+
     return list(unique.values())[:10]
 
 
 # ==========================================
-# Index Course into Vector DB
+# Vector Indexing
 # ==========================================
 def index_course(course):
     from core.ai_agents.vector_store import vector_store
@@ -85,40 +100,22 @@ def index_course(course):
     """
 
     try:
+        # Delete old version
         vector_store.delete(ids=[str(course.id)])
     except Exception:
         pass
 
-    vector_store.add_texts(
-        texts=[text],
-        metadatas=[{
-            "course_id": course.id,
-            "title": course.title,
-            "category": getattr(course.category, "name", str(course.category)),
-            "level": course.level or "",
-        }],
-        ids=[str(course.id)]
-    )
     try:
-        from core.ai_agents.vector_store import vector_store
-
-        text = f"""
-        Title: {course.title}
-        Category: {getattr(course.category, 'name', str(course.category))}
-        Level: {course.level or ''}
-        Description: {course.description}
-        """
-
         vector_store.add_texts(
             texts=[text],
             metadatas=[{
                 "course_id": course.id,
                 "title": course.title,
                 "category": getattr(course.category, "name", str(course.category)),
-                "level": course.level or ""
+                "level": course.level or "",
             }],
             ids=[str(course.id)]
         )
 
     except Exception as e:
-        print("Indexing error:", e)
+        print("Indexing Error:", e)

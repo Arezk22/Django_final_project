@@ -33,3 +33,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"  [FAIL] {doc.title}: {e}"))
 
         self.stdout.write(self.style.SUCCESS("Done."))
+
