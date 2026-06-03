@@ -2,7 +2,6 @@ from core.models import Enrollment
 from core.ai_agents.recommender import search_courses
 from core.ai_agents.explainer import explain_recommendation
 
-
 SIMILARITY_THRESHOLD = 0.35  # Chroma Distance
 
 
@@ -16,8 +15,7 @@ def get_recommendations(user, query, use_ai_explainer=False):
     # 1. Get enrolled courses
     # ==========================================
     enrolled_courses = set(
-        Enrollment.objects.filter(student=user)
-        .values_list("course_id", flat=True)
+        Enrollment.objects.filter(student=user).values_list("course_id", flat=True)
     )
 
     # ==========================================
@@ -108,13 +106,15 @@ def index_course(course):
     try:
         vector_store.add_texts(
             texts=[text],
-            metadatas=[{
-                "course_id": course.id,
-                "title": course.title,
-                "category": getattr(course.category, "name", str(course.category)),
-                "level": course.level or "",
-            }],
-            ids=[str(course.id)]
+            metadatas=[
+                {
+                    "course_id": course.id,
+                    "title": course.title,
+                    "category": getattr(course.category, "name", str(course.category)),
+                    "level": course.level or "",
+                }
+            ],
+            ids=[str(course.id)],
         )
 
     except Exception as e:

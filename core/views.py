@@ -20,13 +20,12 @@ from core.services.recommendation_service import get_recommendations
 from types import SimpleNamespace
 from django.shortcuts import render
 from django.db.models import Q
-from .models import Course, Category, Enrollment # تأكد من صحة مسارات الاستيراد لديك
+from .models import Course, Category, Enrollment  # تأكد من صحة مسارات الاستيراد لديك
 import json
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import Course, Category
-
 
 # def home(request):
 #     return HttpResponse('hello')
@@ -42,13 +41,12 @@ def Register(request):
     return render(request, "core/register.html", {"form": form})
 
 
-
 def course_list(request):
     # 1. تحديد قاعدة البيانات الأساسية للكورسات (تطبق على الكل لغرض الفلترة العامة)
     if request.user.is_authenticated and request.user.profile.role == "teacher":
         # إذا كنت تريد المدرس يرى كورساته فقط حتى عند الفلترة، اتركها كما هي.
         # ولكن بما أنك طلبت "يطبق على كل الـ courses"، سنعرض كل الكورسات أو المنشورة منها للجميع:
-        courses = Course.objects.all() 
+        courses = Course.objects.all()
     else:
         courses = Course.objects.filter(is_published=True)
 
@@ -368,27 +366,32 @@ def profile_view(request):
 #####################
 
 
-
 # تأكد من استيراد دالة الذكاء الاصطناعي لديك
-# from .utils import get_recommendations 
+# from .utils import get_recommendations
+
 
 @login_required
 def recommend(request):
     # إذا كان الطلب قادم من الـ Chatbot عبر JavaScript (AJAX)
-    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if (
+        request.method == "POST"
+        and request.headers.get("x-requested-with") == "XMLHttpRequest"
+    ):
         try:
             data = json.loads(request.body)
             user_message = data.get("message", "").strip()
-            
+
             if not user_message:
-                return JsonResponse({"status": "error", "message": "Empty message"}, status=400)
-            
+                return JsonResponse(
+                    {"status": "error", "message": "Empty message"}, status=400
+                )
+
             # 1. جلب معلومات كل الكورسات من قاعدة البيانات وتلخيصها للـ AI
-            all_courses = Course.objects.all() # أو filter(is_published=True) حسب رغبتك
+            all_courses = Course.objects.all()  # أو filter(is_published=True) حسب رغبتك
             courses_context = "Available Courses in Database:\n"
             for c in all_courses:
                 courses_context += f"- Title: {c.title} | Category: {c.category} | Level: {c.level} | Description: {c.description[:150]}...\n"
-            
+
             # 2. دمج سياق الكورسات مع سؤال المستخدم لتوجيه الـ AI
             prompt_for_ai = (
                 f"You are a helpful Career Advisor AI inside an educational platform.\n"
@@ -396,15 +399,12 @@ def recommend(request):
                 f"User Question: {user_message}\n"
                 f"Answer the user query accurately based ONLY on the available courses listed above if they are asking about courses. Be concise and friendly."
             )
-            
+
             # 3. إرسال الـ prompt المعدل لدالة الذكاء الاصطناعي (تأكد أن دالتك تقبل نص الـ prompt)
             ai_response = get_recommendations(request.user, prompt_for_ai)
-            
-            return JsonResponse({
-                "status": "success",
-                "reply": ai_response
-            })
-            
+
+            return JsonResponse({"status": "success", "reply": ai_response})
+
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
@@ -422,12 +422,15 @@ def recommend(request):
         level = request.POST.get("level", "").strip()
 
         parts = [query]
-        if category: parts.append(f"category {category}")
-        if level: parts.append(f"level {level}")
+        if category:
+            parts.append(f"category {category}")
+        if level:
+            parts.append(f"level {level}")
 
         search_query = " ".join(parts)
         recommendations = get_recommendations(request.user, search_query)
 
+    print("Recommendations:", recommendations)  # Debug print
     return render(
         request,
         "core/course_list.html",
