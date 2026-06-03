@@ -6,13 +6,20 @@ from rest_framework import viewsets, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 
-from .serializers import CourseSerializer, CategorySerializer, EnrollmentSerializer, ChatMessageSerializer
+from .serializers import (
+    CourseSerializer,
+    CategorySerializer,
+    EnrollmentSerializer,
+    ChatMessageSerializer,
+    CourseDocumentSerializer,
+)
 from ..models import Course, Category, User, Enrollment, ChatMessage
 from ..services.assistant import run_assistant
 
 from .permissions import IsTeacher, IsStudent
 
 from core.services.recommendation_service import get_recommendations
+from ..services.assistant import run_assistant
 
 
 # ==========================================
@@ -44,9 +51,7 @@ class CoursesViewSet(viewsets.ModelViewSet):
     # Enroll in Course
     # ==========================================
     @action(
-        detail=True,
-        methods=["post"],
-        permission_classes=[IsAuthenticated, IsStudent]
+        detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsStudent]
     )
     def enroll(self, request, pk=None):
         course = self.get_object()
@@ -57,10 +62,7 @@ class CoursesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        enrollment = Enrollment.objects.create(
-            student=request.user,
-            course=course
-        )
+        enrollment = Enrollment.objects.create(student=request.user, course=course)
 
         serializer = EnrollmentSerializer(enrollment)
 
@@ -69,29 +71,109 @@ class CoursesViewSet(viewsets.ModelViewSet):
     # ==========================================
     # Recommendation API (مرحلة 9)
     # ==========================================
-    @action(
-        detail=False,
-        methods=["post"],
-        permission_classes=[IsAuthenticated]
-    )
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def recommend(self, request):
 
         query = request.data.get("query", "").strip()
 
         if not query:
             return Response(
-                {"error": "query is required"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "query is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        recommendations = get_recommendations(
-            request.user,
-            query
-        )
+        recommendations = get_recommendations(request.user, query)
+
+        return Response(recommendations, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated, IsStudent],
+    )
+    def chat(self, request, pk=None):
+        course = self.get_object()
+
+        # Check enrollment
+        if not Enrollment.objects.filter(student=request.user, course=course).exists():
+            return Response(
+                {"error": "You must be enrolled in the course to chat"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get message
+        message = request.data.get("message", "").strip()
+
+        if not message:
+            return Response(
+                {"error": "message is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+
+            # Get recent messages if you store chat history in DB
+            # For now, empty list like session replacement
+            recent = []
+
+            course_with_category = Course.objects.select_related("category").get(
+                pk=course.pk
+            )
+
+            result = run_assistant(
+                question=message,
+                course=course_with_category,
+                recent_messages=recent,
+            )
+
+            reply = result["content"]
+            source = result.get("source", "")
+
+            return Response(
+                {
+                    "message": message,
+                    "reply": reply,
+                    "source": source,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            print(e)
+
+            return Response(
+                {
+                    "error": "The assistant is temporarily unavailable. Please try again."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def documents(self, request, pk=None):
+        course = self.get_object()
+
+        # Ensure teacher owns this course
+        if course.teacher != request.user:
+            return Response(
+                {"error": "You are not allowed to upload documents to this course"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = CourseDocumentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(course=course)
+
+            return Response(
+                {
+                    "message": "Document uploaded successfully",
+                    "document": serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
         return Response(
-            recommendations,
-            status=status.HTTP_200_OK
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
 
@@ -153,21 +235,14 @@ class RegisterApiView(APIView):
 
         if User.objects.filter(username=username).exists():
             return Response(
-                {"error": "Username already exists"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        user = User.objects.create_user(
-            username=username,
-            password=password
-        )
+        user = User.objects.create_user(username=username, password=password)
 
         user.profile.role = role
         user.profile.save()
 
         token = Token.objects.create(user=user)
 
-        return Response(
-            {"token": token.key},
-            status=status.HTTP_201_CREATED
-        )
+        return Response({"token": token.key}, status=status.HTTP_201_CREATED)
