@@ -9,5 +9,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("my-enrollments/", api_views.MyEnrollmentsView.as_view(), name="enrollments"),
     path("my-courses/", api_views.MyCoursesView.as_view(), name="my-courses"),
-    path("courses/<int:pk>/chat/", api_views.CourseChatView.as_view(), name="course-chat"),
+    # path("courses/<int:pk>/chat/", api_views.CourseChatView.as_view(), name="course-chat"),
 ]
