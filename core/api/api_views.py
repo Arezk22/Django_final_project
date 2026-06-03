@@ -71,7 +71,9 @@ class CoursesViewSet(viewsets.ModelViewSet):
     # ==========================================
     # Recommendation API (مرحلة 9)
     # ==========================================
-    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
+    @action(
+        detail=False, methods=["post"], permission_classes=[IsAuthenticated, IsStudent]
+    )
     def recommend(self, request):
 
         query = request.data.get("query", "").strip()
@@ -147,7 +149,9 @@ class CoursesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsTeacher]
+    )
     def documents(self, request, pk=None):
         course = self.get_object()
 
