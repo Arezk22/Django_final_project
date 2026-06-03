@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-header bg-dark text-white text-center py-4 rounded-top-3">
+                    <div class="fs-1 mb-2">👤</div>
+                    <h4 class="fw-bold m-0">{{ request.user.username }}</h4>
+                    <span class="badge bg-light text-dark mt-2 text-uppercase px-3 py-2 rounded-pill fw-bold">
+                        Logged in as: {{ request.user.profile.role }}
+                    </span>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-success">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <h5 class="fw-bold text-secondary mb-4 border-bottom pb-2">Account Settings</h5>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                {{ u_form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                {{ u_form.last_name }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Username</label>
+                                {{ u_form.username }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                {{ u_form.email }}
+                            </div>
+                            
+                            {# لو عندك حقول في الـ p_form زي الصورة مثلاً بتعرضيها هنا #}
+                            {% if p_form.fields %}
+                                <div class="col-md-12">
+                                    {{ p_form.as_p }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                💾 Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
