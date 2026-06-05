@@ -780,14 +780,27 @@
           const data = await response.json();
           console.log('AI Response:', data);
 
-          chatBody.innerHTML += `
-            <div class="chat-msg bot-msg">
-                <div class="msg-bubble">
-                    ${data.reply}
-                </div>
-            </div>
-        `;
+          let botReply = '';
 
+if (Array.isArray(data.reply)) {
+  botReply = data.reply.map(course => `
+      <div style="margin-bottom:10px">
+          <strong>${course.title}</strong><br>
+          Category: ${course.category}<br>
+          Level: ${course.level}
+      </div>
+  `).join('');
+} else {
+  botReply = data.reply;
+}
+
+chatBody.innerHTML += `
+    <div class="chat-msg bot-msg">
+        <div class="msg-bubble">
+            ${botReply}
+        </div>
+    </div>
+`;
           chatBody.scrollTop = chatBody.scrollHeight;
         } catch (error) {
           console.error(error);

@@ -2,7 +2,11 @@ from core.models import Enrollment
 from core.ai_agents.recommender import search_courses
 from core.ai_agents.explainer import explain_recommendation
 
-SIMILARITY_THRESHOLD = 0.35  # Chroma Distance
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from core.models import Course
+
+SIMILARITY_THRESHOLD = 1.0  # Chroma Distance
 
 
 def get_recommendations(user, query, use_ai_explainer=False):
@@ -119,3 +123,7 @@ def index_course(course):
 
     except Exception as e:
         print("Indexing Error:", e)
+
+
+
+
