@@ -6,5 +6,5 @@ def search_courses(query):
 
     return vector_store.similarity_search_with_score(
         query=query,
-        k=1
+        k=2
     )

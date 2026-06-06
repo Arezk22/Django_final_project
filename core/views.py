@@ -43,7 +43,7 @@ def Register(request):
 
 def course_list(request):
     # 1. تحديد قاعدة البيانات الأساسية للكورسات (تطبق على الكل لغرض الفلترة العامة)
-    if request.user.is_authenticated and request.user.profile.role == "teacher":
+    if request.user.is_authenticated and (request.user.profile.role == "teacher" or request.user.profile.role == "admin"):
         # إذا كنت تريد المدرس يرى كورساته فقط حتى عند الفلترة، اتركها كما هي.
         # ولكن بما أنك طلبت "يطبق على كل الـ courses"، سنعرض كل الكورسات أو المنشورة منها للجميع:
         courses = Course.objects.all()
@@ -442,3 +442,25 @@ def recommend(request):
             "level": level,
         },
     )
+
+
+@login_required
+def career_advisor(request):
+    # AJAX endpoint used by the site-wide chatbot popup in base.html
+    if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
+        try:
+            data = json.loads(request.body)
+            user_message = data.get("message", "").strip()
+
+            if not user_message:
+                return JsonResponse({"status": "error", "message": "Empty message"}, status=400)
+
+            from .services.assistant import run_career_advisor
+
+            result = run_career_advisor(user_message, request.user)
+            reply = result.get("content", "")
+
+            return JsonResponse({"status": "success", "reply": reply})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)

@@ -262,3 +262,23 @@ def run_assistant(question: str, course, recent_messages) -> dict:
     if route == "rag":
         return _run_rag_agent(question, course.id, chat_history_text)
     return _run_general_agent(question, course_context, chat_history_text)
+
+
+def run_career_advisor(question: str, user) -> dict:
+    """Lightweight wrapper to run the general assistant for the site-wide career advisor.
+
+    This avoids routing/RAG logic which requires a course object and document index.
+    """
+    course_context = {
+        "title": "Career Advisor",
+        "description": "Platform-wide career and course guidance",
+        "category": "",
+        "level": "",
+    }
+    chat_history_text = "No previous messages."
+
+    try:
+        return _run_general_agent(question, course_context, chat_history_text)
+    except Exception as e:
+        print("Career advisor error:", e)
+        return {"content": "The assistant is temporarily unavailable. Please try again.", "source": ""}

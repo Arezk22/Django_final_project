@@ -22,5 +22,6 @@ urlpatterns = [
     path("courses/<int:pk>/assistant/clear/", views.clear_chat, name="clear_chat"),
     path("documents/", views.all_documents_view, name="all_documents"),
     path("profile/", views.profile_view, name="profile"),
+    path("career_advisor/", views.career_advisor, name="career_advisor"),
     path("recommend/", views.recommend, name="recommend"),
 ]

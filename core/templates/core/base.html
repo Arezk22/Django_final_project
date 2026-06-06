@@ -765,7 +765,7 @@
         input.value = '';
 
         try {
-          const response = await fetch("{% url 'core:recommend' %}", {
+          const response = await fetch("{% url 'core:career_advisor' %}", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
