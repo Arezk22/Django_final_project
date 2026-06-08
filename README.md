@@ -27,6 +27,8 @@ This is an advanced Django project designed to create a comprehensive web applic
 - ✅ Media Files Handling
 - ✅ Content Management System
 - ✅ Admin Dashboard
+- ✅ RAG Course Recommender
+- ✅ Multi-Agent Teaching Assistant
 
 ---
 
